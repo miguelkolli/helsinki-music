@@ -145,14 +145,18 @@ const batchUpsert = db.transaction((events) => {
   const now = Date.now();
   for (const e of events) {
     const existing = db.prepare('SELECT id FROM events WHERE id=?').get(e.id);
+    const date_ts_val = e.date ? new Date(e.date).getTime() : null;
     stmts.upsert.run({
-      id: e.id, name: e.name, venue: e.venue||'Helsinki',
-      date_iso: e.date||null,
-      date_ts: e.date ? new Date(e.date).getTime() : null,
-      tags: JSON.stringify(e.tags||[]),
-      price: e.price||null, url: e.url||null,
-      source: e._source,
-      raw_json: JSON.stringify(e),
+      id:         String(e.id   || ''),
+      name:       String(e.name || 'Untitled'),
+      venue:      String(e.venue || 'Helsinki'),
+      date_iso:   e.date  ? String(e.date)  : null,
+      date_ts:    (date_ts_val && !isNaN(date_ts_val)) ? date_ts_val : null,
+      tags:       JSON.stringify(Array.isArray(e.tags) ? e.tags : []),
+      price:      e.price ? String(e.price) : null,
+      url:        e.url   ? String(e.url)   : null,
+      source:     String(e._source || 'unknown'),
+      raw_json:   JSON.stringify(e),
       updated_at: now
     });
     existing ? updCount++ : newCount++;
