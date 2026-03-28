@@ -6,4 +6,8 @@ startCommand            = "node server/index.js"
 healthcheckPath         = "/health"
 healthcheckTimeout      = 30
 restartPolicyType       = "on_failure"
-restartPolicyMaxRetries = 3
+restartPolicyMaxRetries = 5
+
+[[deploy.environmentVariables]]
+name  = "NODE_ENV"
+value = "production"

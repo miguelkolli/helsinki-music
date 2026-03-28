@@ -26,7 +26,7 @@ app.use((req,res,next)=>{
 // ════════════════════════════════════════════════════════════════
 //  DATABASE SETUP  (SQLite — single file, zero config)
 // ════════════════════════════════════════════════════════════════
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../data/events.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../data/mgevents.db');
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 const db = new Database(DB_PATH);
@@ -145,14 +145,18 @@ const batchUpsert = db.transaction((events) => {
   const now = Date.now();
   for (const e of events) {
     const existing = db.prepare('SELECT id FROM events WHERE id=?').get(e.id);
+    const date_ts_val = e.date ? new Date(e.date).getTime() : null;
     stmts.upsert.run({
-      id: e.id, name: e.name, venue: e.venue||'Helsinki',
-      date_iso: e.date||null,
-      date_ts: e.date ? new Date(e.date).getTime() : null,
-      tags: JSON.stringify(e.tags||[]),
-      price: e.price||null, url: e.url||null,
-      source: e._source,
-      raw_json: JSON.stringify(e),
+      id:         String(e.id   || ''),
+      name:       String(e.name || 'Untitled'),
+      venue:      String(e.venue || 'Helsinki'),
+      date_iso:   e.date  ? String(e.date)  : null,
+      date_ts:    (date_ts_val && !isNaN(date_ts_val)) ? date_ts_val : null,
+      tags:       JSON.stringify(Array.isArray(e.tags) ? e.tags : []),
+      price:      e.price ? String(e.price) : null,
+      url:        e.url   ? String(e.url)   : null,
+      source:     String(e._source || 'unknown'),
+      raw_json:   JSON.stringify(e),
       updated_at: now
     });
     existing ? updCount++ : newCount++;
@@ -187,7 +191,7 @@ async function crawlLinkedEvents() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  ## TICKETMASTER CRAWLER
+//// TICKETMASTER CRAWLER
 //  API docs : https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
 //  Free key : https://developer.ticketmaster.com  →  "Get Your API Key"
 //  Env var  : TICKETMASTER_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -197,23 +201,23 @@ async function crawlLinkedEvents() {
 
 async function crawlTicketmaster() {
 
-  ## ── 1. KEY CHECK ────────────────────────────────────────────────
-  ## Set TICKETMASTER_API_KEY in your .env file to activate this crawler.
-  ## Leave it empty to skip silently (no crash).
+  // ── 1. KEY CHECK ────────────────────────────────────────────────
+  // Set TICKETMASTER_API_KEY in your .env file to activate this crawler.
+  // Leave it empty to skip silently (no crash).
   const key = process.env.TICKETMASTER_API_KEY;
   if (!key) {
     console.log('  [Ticketmaster] Skipped — no TICKETMASTER_API_KEY in .env');
     return [];
   }
 
-  ## ── 2. BASE URL + QUERY PARAMS ──────────────────────────────────
-  ## city=Helsinki            → only Helsinki area venues
-  ## countryCode=FI           → Finland country filter (avoids false matches)
-  ## classificationName=music → only music events (not sports, theatre etc.)
-  ## size=200                 → max events per page (200 is the API limit)
-  ## sort=date,asc            → chronological order
-  ## includeTBA=yes           → include events with TBA dates
-  ## includeTBD=yes           → include events with TBD dates
+  // ── 2. BASE URL + QUERY PARAMS ──────────────────────────────────
+  // city=Helsinki            → only Helsinki area venues
+  // countryCode=FI           → Finland country filter (avoids false matches)
+  // classificationName=music → only music events (not sports, theatre etc.)
+  // size=200                 → max events per page (200 is the API limit)
+  // sort=date,asc            → chronological order
+  // includeTBA=yes           → include events with TBA dates
+  // includeTBD=yes           → include events with TBD dates
   const BASE_URL = 'https://app.ticketmaster.com/discovery/v2/events.json';
   const PARAMS = new URLSearchParams({
     apikey:             key,
@@ -226,31 +230,31 @@ async function crawlTicketmaster() {
     includeTBD:         'yes',
   });
 
-  ## ── 3. FETCH ALL PAGES ──────────────────────────────────────────
-  ## Ticketmaster uses page= param (0-indexed).
-  ## First response tells us totalPages in page.totalPages.
-  ## We fetch page 0 first, then loop through remaining pages.
-  ## Rate limit: 5 req/sec → 220ms delay between requests to stay safe.
+  // ── 3. FETCH ALL PAGES ──────────────────────────────────────────
+  // Ticketmaster uses page= param (0-indexed).
+  // First response tells us totalPages in page.totalPages.
+  // We fetch page 0 first, then loop through remaining pages.
+  // Rate limit: 5 req/sec → 220ms delay between requests to stay safe.
 
   const all = [];
   let page = 0;
-  let totalPages = 1; ## updated after first response
+  let totalPages = 1;// updated after first response
 
   console.log('  [Ticketmaster] Starting paginated fetch...');
 
   while (page < totalPages) {
 
     try {
-      ## Build URL for this page
+// Build URL for this page
       const url = `${BASE_URL}?${PARAMS}&page=${page}`;
 
-      ## Fetch with timeout (10s) — Ticketmaster can be slow
+// Fetch with timeout (10s) — Ticketmaster can be slow
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
       const r = await fetch(url, { signal: controller.signal });
       clearTimeout(timeout);
 
-      ## Handle non-200 responses
+// Handle non-200 responses
       if (!r.ok) {
         console.error(`  [Ticketmaster] HTTP ${r.status} on page ${page} — stopping`);
         break;
@@ -258,60 +262,60 @@ async function crawlTicketmaster() {
 
       const d = await r.json();
 
-      ## On first page: read totalPages from response
+// On first page: read totalPages from response
       if (page === 0) {
         totalPages = d.page?.totalPages ?? 1;
         const totalElements = d.page?.totalElements ?? 0;
         console.log(`  [Ticketmaster] ${totalElements} events across ${totalPages} pages`);
       }
 
-      ## Extract events from _embedded.events array
-      ## _embedded may be missing if page has no results
+// Extract events from _embedded.events array
+// _embedded may be missing if page has no results
       const events = d._embedded?.events ?? [];
 
       events.forEach(e => {
 
-        ## ── 4. NORMALISE EACH EVENT ────────────────────────────────
-        ## Map Ticketmaster fields to our unified schema.
-        ## All fields are optional — use fallbacks for everything.
+// ── 4. NORMALISE EACH EVENT ────────────────────────────────
+// Map Ticketmaster fields to our unified schema.
+// All fields are optional — use fallbacks for everything.
 
-        ## Name: always present
+// Name: always present
         const name = e.name ?? 'Unknown event';
 
-        ## Venue: nested inside _embedded.venues array
+// Venue: nested inside _embedded.venues array
         const venue = e._embedded?.venues?.[0]?.name ?? 'Helsinki';
 
-        ## Date: prefer dateTime (full ISO), fall back to localDate
+// Date: prefer dateTime (full ISO), fall back to localDate
         const date = e.dates?.start?.dateTime
                   ?? e.dates?.start?.localDate
                   ?? null;
 
-        ## Tags: from classifications → genre name
-        ## Filter out 'Undefined' which TM returns when genre is unknown
+// Tags: from classifications → genre name
+// Filter out 'Undefined' which TM returns when genre is unknown
         const tags = (e.classifications ?? [])
           .flatMap(c => [c.genre?.name, c.subGenre?.name])
           .filter(t => t && t !== 'Undefined')
           .slice(0, 3);
 
-        ## Price: priceRanges array — take the min of the first range
-        ## Format as "€12+" to indicate "from" price
+// Price: priceRanges array — take the min of the first range
+// Format as "€12+" to indicate "from" price
         const priceRange = e.priceRanges?.[0];
         const price = priceRange
           ? `€${Math.round(priceRange.min)}–€${Math.round(priceRange.max)}`
           : null;
 
-        ## Images: grab the widest image for thumbnail use
+// Images: grab the widest image for thumbnail use
         const image = (e.images ?? [])
           .sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0]?.url ?? null;
 
-        ## Ticket URL: direct buy link
+// Ticket URL: direct buy link
         const url_link = e.url ?? null;
 
-        ## Onsale status: 'onsale' | 'offsale' | 'cancelled' | 'rescheduled'
+// Onsale status: 'onsale' | 'offsale' | 'cancelled' | 'rescheduled'
         const status = e.dates?.status?.code ?? null;
 
         all.push({
-          id:     'tm_' + e.id,      ## prefix to avoid ID collision with other sources
+          id:     'tm_' + e.id,// prefix to avoid ID collision with other sources
           name,
           venue,
           date,
@@ -327,17 +331,17 @@ async function crawlTicketmaster() {
       console.log(`  [Ticketmaster] Page ${page + 1}/${totalPages} — ${events.length} events`);
       page++;
 
-      ## ── 5. RATE LIMITING ──────────────────────────────────────────
-      ## Free tier: 5 req/sec. 220ms between requests = ~4.5 req/sec.
-      ## Increase delay if you hit 429 Too Many Requests errors.
+// ── 5. RATE LIMITING ──────────────────────────────────────────
+// Free tier: 5 req/sec. 220ms between requests = ~4.5 req/sec.
+// Increase delay if you hit 429 Too Many Requests errors.
       if (page < totalPages) {
         await new Promise(r => setTimeout(r, 220));
       }
 
     } catch (err) {
-      ## AbortError = timeout, other = network/parse error
+// AbortError = timeout, other = network/parse error
       console.error(`  [Ticketmaster] Error on page ${page}: ${err.message}`);
-      break; ## stop pagination on error — return what we have so far
+      break;// stop pagination on error — return what we have so far
     }
   }
 
@@ -347,7 +351,7 @@ async function crawlTicketmaster() {
 
 
 // ════════════════════════════════════════════════════════════════
-//  ## SONGKICK CRAWLER
+//// SONGKICK CRAWLER
 //  API docs : https://www.songkick.com/developer/event-search
 //  Free key : https://www.songkick.com/developer  →  apply (manual review)
 //  Env var  : SONGKICK_API_KEY=xxxxxxxxxxxxxxxx
@@ -358,36 +362,36 @@ async function crawlTicketmaster() {
 
 async function crawlSongkick() {
 
-  ## ── 1. KEY CHECK ────────────────────────────────────────────────
-  ## Set SONGKICK_API_KEY in your .env file to activate this crawler.
-  ## Songkick requires a manual application — allow a few days for approval.
+  // ── 1. KEY CHECK ────────────────────────────────────────────────
+  // Set SONGKICK_API_KEY in your .env file to activate this crawler.
+  // Songkick requires a manual application — allow a few days for approval.
   const key = process.env.SONGKICK_API_KEY;
   if (!key) {
     console.log('  [Songkick] Skipped — no SONGKICK_API_KEY in .env');
     return [];
   }
 
-  ## ── 2. METRO AREA ID ────────────────────────────────────────────
-  ## Songkick organises events by metro area, not city string.
-  ## Helsinki metro area ID = 28878
-  ## To look up other cities: GET /search/locations.json?query=Helsinki&apikey=KEY
+  // ── 2. METRO AREA ID ────────────────────────────────────────────
+  // Songkick organises events by metro area, not city string.
+  // Helsinki metro area ID = 28878
+  // To look up other cities: GET /search/locations.json?query=Helsinki&apikey=KEY
   const METRO_ID = 28878;
 
-  ## ── 3. BASE URL ─────────────────────────────────────────────────
-  ## /metro_areas/{id}/calendar.json = all upcoming events in this metro
-  ## This automatically includes all venues in the Helsinki metro area
+  // ── 3. BASE URL ─────────────────────────────────────────────────
+  // /metro_areas/{id}/calendar.json = all upcoming events in this metro
+  // This automatically includes all venues in the Helsinki metro area
   const BASE_URL = `https://api.songkick.com/api/3.0/metro_areas/${METRO_ID}/calendar.json`;
 
-  ## ── 4. FETCH ALL PAGES ──────────────────────────────────────────
-  ## Songkick pagination is 1-indexed (first page = 1).
-  ## Response includes resultsPage.totalEntries and resultsPage.perPage.
-  ## We calculate total pages from those values.
-  ## Rate limit: ~100 req/hour → 40s between requests is safe.
-  ## In practice: 50 events/page × 10 pages = 500 events comfortably within limits.
+  // ── 4. FETCH ALL PAGES ──────────────────────────────────────────
+  // Songkick pagination is 1-indexed (first page = 1).
+  // Response includes resultsPage.totalEntries and resultsPage.perPage.
+  // We calculate total pages from those values.
+  // Rate limit: ~100 req/hour → 40s between requests is safe.
+  // In practice: 50 events/page × 10 pages = 500 events comfortably within limits.
 
   const all = [];
   let page = 1;
-  let totalPages = 1; ## updated after first response
+  let totalPages = 1;// updated after first response
 
   console.log('  [Songkick] Starting paginated fetch for Helsinki metro...');
 
@@ -396,17 +400,17 @@ async function crawlSongkick() {
     try {
       const url = `${BASE_URL}?apikey=${key}&per_page=50&page=${page}`;
 
-      ## Fetch with 10s timeout
+// Fetch with 10s timeout
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
       const r = await fetch(url, { signal: controller.signal });
       clearTimeout(timeout);
 
-      ## Handle errors
+// Handle errors
       if (!r.ok) {
-        ## 401 = bad API key
-        ## 403 = key not approved yet or banned
-        ## 429 = rate limited — increase delay below
+// 401 = bad API key
+// 403 = key not approved yet or banned
+// 429 = rate limited — increase delay below
         console.error(`  [Songkick] HTTP ${r.status} on page ${page}`);
         if (r.status === 401) console.error('  [Songkick] Check your SONGKICK_API_KEY — may be invalid');
         if (r.status === 403) console.error('  [Songkick] Key may not be approved yet — apply at songkick.com/developer');
@@ -416,8 +420,8 @@ async function crawlSongkick() {
       const d = await r.json();
       const resultsPage = d.resultsPage;
 
-      ## ── 5. CALCULATE TOTAL PAGES ────────────────────────────────
-      ## Songkick gives us totalEntries and perPage — we derive totalPages.
+// ── 5. CALCULATE TOTAL PAGES ────────────────────────────────
+// Songkick gives us totalEntries and perPage — we derive totalPages.
       if (page === 1) {
         const total = resultsPage?.totalEntries ?? 0;
         const perPage = resultsPage?.perPage ?? 50;
@@ -425,58 +429,58 @@ async function crawlSongkick() {
         console.log(`  [Songkick] ${total} events across ${totalPages} pages`);
       }
 
-      ## ── 6. EXTRACT EVENTS ───────────────────────────────────────
-      ## Events are in resultsPage.results.event (array).
-      ## Songkick uses 'Concert' and 'Festival' as event types.
+// ── 6. EXTRACT EVENTS ───────────────────────────────────────
+// Events are in resultsPage.results.event (array).
+// Songkick uses 'Concert' and 'Festival' as event types.
       const events = resultsPage?.results?.event ?? [];
 
       events.forEach(e => {
 
-        ## ── 7. NORMALISE EACH EVENT ────────────────────────────────
-        ## Songkick event structure is simpler than Ticketmaster.
-        ## displayName = "Artist at Venue, City" — use as the event name.
+// ── 7. NORMALISE EACH EVENT ────────────────────────────────
+// Songkick event structure is simpler than Ticketmaster.
+// displayName = "Artist at Venue, City" — use as the event name.
 
-        ## Name: displayName is the full formatted name e.g. "Haloo Helsinki! at Tavastia"
+// Name: displayName is the full formatted name e.g. "Haloo Helsinki! at Tavastia"
         const name = e.displayName ?? 'Unknown event';
 
-        ## Venue: nested venue object
-        ## venue.displayName = "Tavastia"
-        ## venue.lat / venue.lng available too
+// Venue: nested venue object
+// venue.displayName = "Tavastia"
+// venue.lat / venue.lng available too
         const venue = e.venue?.displayName ?? 'Helsinki';
 
-        ## Date: start.datetime (full ISO) or start.date (date only)
-        ## start.time is also available separately as "HH:MM:SS"
+// Date: start.datetime (full ISO) or start.date (date only)
+// start.time is also available separately as "HH:MM:SS"
         const date = e.start?.datetime
                   ?? (e.start?.date ? e.start.date + 'T' + (e.start.time ?? '00:00:00') : null);
 
-        ## Tags: Songkick doesn't provide genre tags per event.
-        ## We use the event type + 'live music' as base tags.
-        ## Artists list is available in e.performance[] if you want artist names as tags.
+// Tags: Songkick doesn't provide genre tags per event.
+// We use the event type + 'live music' as base tags.
+// Artists list is available in e.performance[] if you want artist names as tags.
         const tags = [
           e.type === 'Festival' ? 'festival' : 'live music',
-          ## Optionally add headliner name as a tag:
-          ## e.performance?.[0]?.artist?.displayName,
+// Optionally add headliner name as a tag:
+// e.performance?.[0]?.artist?.displayName,
         ].filter(Boolean);
 
-        ## Artists: Songkick has full performance lineup
-        ## e.performance = [{ artist: { displayName, uri }, billing: 'headline'|'support' }]
-        ## Useful for enriching event data — stored in tags here
+// Artists: Songkick has full performance lineup
+// e.performance = [{ artist: { displayName, uri }, billing: 'headline'|'support' }]
+// Useful for enriching event data — stored in tags here
         const artists = (e.performance ?? [])
           .map(p => p.artist?.displayName)
           .filter(Boolean)
           .slice(0, 3);
         if (artists.length) tags.push(...artists);
 
-        ## Ticket URL: Songkick links to their own event page
-        ## uri = "https://www.songkick.com/concerts/12345"
+// Ticket URL: Songkick links to their own event page
+// uri = "https://www.songkick.com/concerts/12345"
         const url_link = e.uri ?? null;
 
-        ## Songkick does not provide price data
-        ## (prices come from linked ticket sellers on their site)
+// Songkick does not provide price data
+// (prices come from linked ticket sellers on their site)
         const price = null;
 
         all.push({
-          id:     'sk_' + e.id,     ## prefix to avoid ID collision
+          id:     'sk_' + e.id,// prefix to avoid ID collision
           name,
           venue,
           date,
@@ -490,13 +494,13 @@ async function crawlSongkick() {
       console.log(`  [Songkick] Page ${page}/${totalPages} — ${events.length} events`);
       page++;
 
-      ## ── 8. RATE LIMITING ──────────────────────────────────────────
-      ## Songkick free tier: ~100 req/hour.
-      ## 40s delay = 1.5 req/min = 90 req/hour — safely under limit.
-      ## If you have a paid plan with higher limits, reduce this delay.
-      ## If you get 429 errors, increase to 60000 (1 per minute).
+// ── 8. RATE LIMITING ──────────────────────────────────────────
+// Songkick free tier: ~100 req/hour.
+// 40s delay = 1.5 req/min = 90 req/hour — safely under limit.
+// If you have a paid plan with higher limits, reduce this delay.
+// If you get 429 errors, increase to 60000 (1 per minute).
       if (page <= totalPages) {
-        await new Promise(r => setTimeout(r, 40000)); ## 40 second delay
+        await new Promise(r => setTimeout(r, 40000));// 40 second delay
       }
 
     } catch (err) {
@@ -656,6 +660,22 @@ app.post('/api/crawl', async (req, res) => {
 
 // GET /api/logs — crawl history
 app.get('/api/logs', (req,res) => res.json(stmts.recentLogs.all()));
+
+// ── ADMIN PANEL ─────────────────────────────────────────────────
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../public/admin.html')));
+
+// POST /api/sources — register a custom site (stored in memory; persist to DB if needed)
+const customSources = [];
+app.post('/api/sources', (req, res) => {
+  const { name, url, type, freq, notes } = req.body;
+  if (!name || !url) return res.status(400).json({ error: 'name and url required' });
+  customSources.push({ name, url, type: type||'other', freq: freq||'24', notes: notes||'', addedAt: Date.now() });
+  console.log(`  [Admin] Custom source added: ${name} — ${url}`);
+  res.json({ ok: true, total: customSources.length });
+});
+
+// GET /api/sources — list custom sources
+app.get('/api/sources', (req, res) => res.json(customSources));
 
 // GET /api/export — download full DB as JSON
 app.get('/api/export', (req,res) => {

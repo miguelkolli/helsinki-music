@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Database (Railway uses a volume — don't commit your local DB)
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets — NEVER commit these
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

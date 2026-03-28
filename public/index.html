@@ -7,295 +7,431 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-:root{
-  --bg:#0e0f11;--bg2:#16181c;--bg3:#1e2026;--bg4:#25272e;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --text:#f0f0ee;--text2:#8a8c92;--text3:#50535c;
-  --green:#1D9E75;--radius:10px;
+:root {
+  --bg: #0e0f11; --bg2: #16181c; --bg3: #1e2026;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --text: #f0f0ee; --text2: #8a8c92; --text3: #545760;
+  --green: #1D9E75; --blue: #378ADD; --amber: #BA7517; --purple: #7F77DD;
+  --red: #E24B4A;
+  --radius: 10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px}
-a{color:inherit;text-decoration:none}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 
-.banner{background:var(--bg2);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}
-.logo{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+/* ── layout ── */
+.app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+.topbar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;z-index:10}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:1rem 0;overflow-y:auto}
+.main{overflow-y:auto;padding:1.5rem}
+
+/* ── topbar ── */
+.logo{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px}
 .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
-.logo-dot.pulse{animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
-.banner-sub{font-size:12px;color:var(--text2);margin-left:4px}
-.banner-right{display:flex;gap:8px;align-items:center}
-.banner-right input{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-family:inherit;font-size:13px;width:200px}
-.banner-right input::placeholder{color:var(--text3)}
-.banner-right input:focus{outline:none;border-color:rgba(255,255,255,.22)}
-.btn{font-size:12px;padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:inherit;transition:background .1s}
+.logo-dot.syncing{animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.top-right{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text2)}
+.btn{font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-family:inherit;transition:background 0.1s}
 .btn:hover{background:var(--bg3)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{opacity:0.9}
 
-.stats-strip{display:flex;gap:6px;flex-wrap:wrap;padding:.75rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg2)}
-.stat-pill{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
-.stat-pill b{color:var(--text);font-weight:500}
+/* ── sidebar ── */
+.nav-section{font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--text3);padding:0 1rem;margin:0.5rem 0 0.25rem;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:7px 1rem;cursor:pointer;color:var(--text2);font-size:13px;transition:color 0.1s}
+.nav-item:hover{color:var(--text)}
+.nav-item.active{color:var(--text);background:var(--bg3)}
+.nav-dot{width:6px;height:6px;border-radius:50%}
+.nav-count{margin-left:auto;font-family:'Space Mono',monospace;font-size:11px;color:var(--text3)}
 
-.main{padding:1.25rem 1.5rem}
-.venue-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
-@media(max-width:580px){.venue-grid{grid-template-columns:1fr}}
+/* ── stat cards ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:0.875rem 1rem}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:6px}
+.stat-val{font-family:'Space Mono',monospace;font-size:22px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
 
-.venue-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .15s}
-.venue-card:hover{border-color:var(--border2)}
-.venue-header{padding:.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.venue-name{font-size:13px;font-weight:600;letter-spacing:-.01em}
-.venue-badge{font-size:10px;padding:2px 8px;border-radius:8px;background:var(--bg3);color:var(--text2);font-family:'Space Mono',monospace}
+/* ── search ── */
+.search-row{display:flex;gap:8px;margin-bottom:1rem}
+.search-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:inherit;font-size:13px}
+.search-row input:focus{outline:none;border-color:var(--border2)}
+.search-row input::placeholder{color:var(--text3)}
 
-.event-list{padding:.25rem 0}
-.event-row{padding:.5rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;display:block}
-.event-row:last-child{border-bottom:none}
-.event-row:hover{background:var(--bg3)}
-.erow-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.etitle{font-size:12px;font-weight:500;line-height:1.3;flex:1;color:var(--text)}
-.price-tag{font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(29,158,117,.18);color:#4fd4a8;font-weight:600;white-space:nowrap;flex-shrink:0}
-.free-tag{font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(29,158,117,.28);color:#4fd4a8;font-weight:700;white-space:nowrap;flex-shrink:0}
-.edate{font-size:10px;color:var(--text2);margin-top:3px;font-family:'Space Mono',monospace}
-.etags{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
-.etag{font-size:10px;padding:1px 6px;border-radius:4px;background:var(--bg4);color:var(--text3)}
-.more-row{padding:.5rem 1rem;font-size:11px;color:var(--text3);border-top:1px solid var(--border);cursor:pointer}
-.more-row:hover{color:var(--text2)}
-.no-events{padding:1rem;font-size:12px;color:var(--text3);text-align:center}
+/* ── filter chips ── */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.chip{font-size:11px;padding:4px 12px;border-radius:20px;cursor:pointer;border:1px solid var(--border);color:var(--text2);background:transparent;transition:all 0.1s}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
 
-.pagination{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;flex-wrap:wrap;gap:8px}
-.page-info{font-size:12px;color:var(--text2)}
-.page-ctrl{display:flex;align-items:center;gap:10px}
-.page-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:22px;display:flex;align-items:center;justify-content:center;transition:background .1s;line-height:1}
-.page-btn:hover{background:var(--bg3)}
-.page-btn:disabled{opacity:.22;cursor:default;pointer-events:none}
-.dots{display:flex;gap:5px;align-items:center}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--border2);cursor:pointer;transition:all .15s}
-.dot.active{background:var(--green);width:18px;border-radius:3px}
-.page-total{font-size:11px;color:var(--text3);font-family:'Space Mono',monospace}
-.state-msg{grid-column:1/-1;text-align:center;padding:3rem;color:var(--text2);font-size:13px;font-family:'Space Mono',monospace}
+/* ── ai answer ── */
+.ai-bar{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--radius);padding:0.875rem 1.25rem;margin-bottom:1.25rem;display:none}
+.ai-label{font-size:11px;color:var(--blue);margin-bottom:5px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+.ai-text{font-size:13px;line-height:1.7;color:var(--text)}
+
+/* ── events grid ── */
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.ecard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:0.875rem 1rem;cursor:pointer;transition:border-color 0.12s,transform 0.1s}
+.ecard:hover{border-color:var(--border2);transform:translateY(-1px)}
+.ecard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.ecard-date{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;font-family:'Space Mono',monospace}
+.spill{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700;letter-spacing:0.03em}
+.s-hel{background:rgba(29,158,117,0.15);color:#4fd4a8}
+.s-tm{background:rgba(55,138,221,0.15);color:#6db3f0}
+.s-sk{background:rgba(186,117,23,0.15);color:#e8aa50}
+.s-tiketti{background:rgba(127,119,221,0.15);color:#b0abf0}
+.ecard-name{font-size:13px;font-weight:600;margin-bottom:3px;line-height:1.3;color:var(--text)}
+.ecard-venue{font-size:12px;color:var(--text2);margin-bottom:8px}
+.ecard-tags{display:flex;gap:4px;flex-wrap:wrap}
+.etag{font-size:10px;padding:2px 8px;border-radius:6px;background:var(--bg3);color:var(--text2)}
+.ptag{font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(29,158,117,0.2);color:#4fd4a8;font-weight:700}
+.empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px}
+
+/* ── log panel ── */
+.log-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;max-height:260px;overflow-y:auto}
+.log-line{display:flex;gap:12px;font-family:'Space Mono',monospace;font-size:11px;line-height:1.9;border-bottom:1px solid var(--border)}
+.log-time{color:var(--text3);min-width:54px}
+.log-src{min-width:60px;color:var(--text2)}
+.log-ok{color:var(--green)}
+.log-warn{color:var(--amber)}
+.log-err{color:var(--red)}
+
+/* ── source cards ── */
+.src-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.5rem}
+.src-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
+.src-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.src-name{font-size:13px;font-weight:600}
+.src-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700}
+.b-free{background:rgba(29,158,117,0.2);color:#4fd4a8}
+.b-key{background:rgba(55,138,221,0.2);color:#6db3f0}
+.b-crawl{background:rgba(127,119,221,0.2);color:#b0abf0}
+.src-num{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;margin-bottom:2px}
+.src-bar{height:3px;border-radius:2px;background:var(--bg3);margin-top:10px}
+.src-fill{height:100%;border-radius:2px;transition:width 0.7s ease}
+
+/* ── config ── */
+.config-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem}
+.config-title{font-size:13px;font-weight:600;margin-bottom:1rem;color:var(--text)}
+.key-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.key-field label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px}
+.key-field input,.key-field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:'Space Mono',monospace;font-size:12px}
+.key-field.disabled{opacity:0.4;pointer-events:none}
+.code-comment{font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);background:var(--bg3);border-left:2px solid var(--border2);padding:8px 12px;border-radius:0 6px 6px 0;margin-top:10px;line-height:1.9;white-space:pre}
+
+/* ── tabs ── */
+.tab-bar{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.tab{font-size:12px;padding:7px 16px;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);font-weight:500;margin-bottom:-1px}
+.tab.active{border-bottom-color:var(--green);color:var(--text)}
 </style>
 </head>
 <body>
+<div class="app">
 
-<header class="banner">
-  <div style="display:flex;align-items:center;gap:10px">
-    <div class="logo"><div class="logo-dot pulse" id="logo-dot"></div>helsinki_music</div>
-    <span class="banner-sub" id="banner-sub">Loading…</span>
-  </div>
-  <div class="banner-right">
-    <input type="text" id="search" placeholder="Search venue or event… ( / )" oninput="onSearch()"/>
-    <button class="btn" onclick="loadEvents()">Refresh</button>
-    <button class="btn" onclick="window.open('/api/export','_blank')">Export</button>
-  </div>
-</header>
-
-<div class="stats-strip" id="stats-strip"></div>
-
-<div class="main">
-  <div class="venue-grid" id="grid">
-    <div class="state-msg">Connecting to server…</div>
-  </div>
-  <div class="pagination">
-    <div class="page-info" id="page-info">Page 1</div>
-    <div class="page-ctrl">
-      <button class="page-btn" id="btn-prev" onclick="changePage(-1)" disabled>&#8249;</button>
-      <div class="dots" id="dots"></div>
-      <button class="page-btn" id="btn-next" onclick="changePage(1)">&#8250;</button>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <div class="logo-dot" id="pulse"></div>
+      helsinki_music_db
     </div>
-    <div class="page-total" id="page-total"></div>
-  </div>
+    <div class="top-right">
+      <span id="sync-time">—</span>
+      <button class="btn primary" onclick="triggerCrawl()">▶ Run crawl</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section">Views</div>
+    <div class="nav-item active" onclick="showView('events',this)">
+      <div class="nav-dot" style="background:var(--green)"></div> Events
+      <span class="nav-count" id="nav-total">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('sources',this)">
+      <div class="nav-dot" style="background:var(--blue)"></div> Sources
+    </div>
+    <div class="nav-item" onclick="showView('logs',this)">
+      <div class="nav-dot" style="background:var(--amber)"></div> Crawl logs
+    </div>
+    <div class="nav-item" onclick="showView('config',this)">
+      <div class="nav-dot" style="background:var(--purple)"></div> Config
+    </div>
+
+    <div class="nav-section" style="margin-top:1.5rem">Sources</div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--green)"></div> LinkedEvents <span class="nav-count" id="nav-hel">0</span></div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--blue)"></div> Ticketmaster <span class="nav-count" id="nav-tm">0</span></div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--amber)"></div> Songkick <span class="nav-count" id="nav-sk">0</span></div>
+    <div class="nav-item"><div class="nav-dot" style="background:var(--purple)"></div> Tiketti <span class="nav-count" id="nav-tiketti">0</span></div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── EVENTS VIEW ── -->
+    <div id="view-events">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-label">Total events</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">in database</div></div>
+        <div class="stat"><div class="stat-label">This week</div><div class="stat-val" id="s-week">—</div><div class="stat-sub">upcoming</div></div>
+        <div class="stat"><div class="stat-label">Sources live</div><div class="stat-val" id="s-sources">—</div><div class="stat-sub">of 4</div></div>
+        <div class="stat"><div class="stat-label">Last crawl</div><div class="stat-val" id="s-sync" style="font-size:15px;margin-top:5px">—</div></div>
+      </div>
+
+      <div class="search-row">
+        <input type="text" id="q" placeholder='Search: "jazz friday", "metal", "free concert", "tavastia"…' />
+        <button class="btn primary" onclick="doSearch()">Search ↗</button>
+      </div>
+
+      <div class="chips">
+        <span class="chip active" onclick="setFilter('',this)">All</span>
+        <span class="chip" onclick="setFilter('jazz',this)">Jazz</span>
+        <span class="chip" onclick="setFilter('rock',this)">Rock</span>
+        <span class="chip" onclick="setFilter('metal',this)">Metal</span>
+        <span class="chip" onclick="setFilter('electronic',this)">Electronic</span>
+        <span class="chip" onclick="setFilter('classical',this)">Classical</span>
+        <span class="chip" onclick="setFilter('pop',this)">Pop</span>
+        <span class="chip" onclick="setFilter('folk',this)">Folk</span>
+        <span class="chip" onclick="setFilter('free',this)">Free</span>
+      </div>
+
+      <div class="ai-bar" id="ai-bar">
+        <div class="ai-label">AI answer</div>
+        <div class="ai-text" id="ai-text"></div>
+      </div>
+
+      <div class="events-grid" id="grid"><div class="empty">Press "Run crawl" to populate the database</div></div>
+    </div>
+
+    <!-- ── SOURCES VIEW ── -->
+    <div id="view-sources" style="display:none">
+      <h2 style="font-size:16px;font-weight:600;margin-bottom:1.25rem">Data sources</h2>
+      <div class="src-grid" id="src-grid">
+        <div class="src-card"><div class="src-header"><span class="src-name">LinkedEvents</span><span class="src-badge b-free">FREE</span></div><div class="src-num" id="c-hel">0</div><div style="font-size:11px;color:var(--text2)">api.hel.fi · no key · every 6h</div><div class="src-bar"><div class="src-fill" id="b-hel" style="width:0%;background:var(--green)"></div></div></div>
+        <div class="src-card"><div class="src-header"><span class="src-name">Ticketmaster</span><span class="src-badge b-key">API KEY</span></div><div class="src-num" id="c-tm">0</div><div style="font-size:11px;color:var(--text2)">developer.ticketmaster.com · every 12h</div><div class="src-bar"><div class="src-fill" id="b-tm" style="width:0%;background:var(--blue)"></div></div></div>
+        <div class="src-card"><div class="src-header"><span class="src-name">Songkick</span><span class="src-badge b-key">API KEY</span></div><div class="src-num" id="c-sk">0</div><div style="font-size:11px;color:var(--text2)">api.songkick.com · every 24h</div><div class="src-bar"><div class="src-fill" id="b-sk" style="width:0%;background:var(--amber)"></div></div></div>
+        <div class="src-card"><div class="src-header"><span class="src-name">Tiketti</span><span class="src-badge b-crawl">WEB CRAWL</span></div><div class="src-num" id="c-tiketti">0</div><div style="font-size:11px;color:var(--text2)">tiketti.fi · scraper · every 8h</div><div class="src-bar"><div class="src-fill" id="b-tiketti" style="width:0%;background:var(--purple)"></div></div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+        <button class="btn primary" onclick="triggerCrawl()">▶ Run full crawl now</button>
+        <button class="btn" onclick="exportData()">↓ Export JSON</button>
+      </div>
+    </div>
+
+    <!-- ── LOGS VIEW ── -->
+    <div id="view-logs" style="display:none">
+      <h2 style="font-size:16px;font-weight:600;margin-bottom:1.25rem">Crawl history</h2>
+      <div class="log-panel" id="log-panel">
+        <div class="log-line"><span class="log-time log-warn">--:--</span><span class="log-src">system</span><span class="log-warn">No logs yet — run a crawl first</span></div>
+      </div>
+    </div>
+
+    <!-- ── CONFIG VIEW ── -->
+    <div id="view-config" style="display:none">
+      <h2 style="font-size:16px;font-weight:600;margin-bottom:1.25rem">Configuration</h2>
+      <div class="config-section">
+        <div class="config-title">API keys</div>
+        <div class="key-grid">
+          <div class="key-field">
+            <label>LinkedEvents endpoint</label>
+            <input type="text" value="https://api.hel.fi/linkedevents/v1/" readonly/>
+          </div>
+          <div class="key-field">
+            <label>Ticketmaster API key</label>
+            <input type="password" id="cfg-tm" placeholder="Set in .env: TICKETMASTER_API_KEY"/>
+          </div>
+          <div class="key-field">
+            <label>Songkick API key</label>
+            <input type="password" id="cfg-sk" placeholder="Set in .env: SONGKICK_API_KEY"/>
+          </div>
+          <!-- TIKETTI API KEY — commented out, no public API -->
+          <div class="key-field disabled">
+            <label>Tiketti API key</label>
+            <input type="password" placeholder="No public API — using web crawler"/>
+          </div>
+        </div>
+        <div class="code-comment">// TIKETTI_API_KEY — activate when public API is released:
+//
+//   TIKETTI_API_KEY=your_key_here          # in .env
+//   TIKETTI_API_BASE=https://api.tiketti.fi/v1
+//
+//   headers: { 'X-Api-Key': process.env.TIKETTI_API_KEY }
+//
+// Until then → web crawler runs automatically every 8 hours.</div>
+      </div>
+
+      <div class="config-section">
+        <div class="config-title">Server .env reference</div>
+        <div class="code-comment">PORT=3000
+DB_PATH=./data/events.db
+CRAWL_ON_START=true
+CRAWL_DAYS=90
+TICKETMASTER_API_KEY=your_tm_key
+SONGKICK_API_KEY=your_sk_key</div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
 <script>
-const PER_PAGE = 4;
-let allEvents   = [];
-let venueMap    = new Map();
-let pages       = [];
-let currentPage = 0;
-let searchQuery = '';
+// ═══════════════════════════════════════
+//  API base — same origin (server serves this file)
+// ═══════════════════════════════════════
+const API = '';  // empty = same host:port
 
-// ── load from server API ─────────────────────────────
-async function loadEvents() {
-  setDot(true);
-  setText('Fetching…');
-  try {
-    const r = await fetch('/api/events?limit=1000');
-    if (!r.ok) throw new Error('server');
-    const d = await r.json();
-    allEvents = (d.events||[]).map(e=>({
-      ...e,
-      date_iso: e.date_iso||e.date||null,
-      tags: Array.isArray(e.tags)?e.tags:JSON.parse(e.tags||'[]'),
-    }));
-    if (allEvents.length === 0) throw new Error('empty');
-    build();
-  } catch(_) {
-    // fallback — fetch LinkedEvents directly
-    await loadLinkedEvents();
-  }
-}
+let currentFilter = '';
+let allEvents = [];
 
-// ── direct LinkedEvents fallback ─────────────────────
-async function loadLinkedEvents() {
-  const KW = ['music','concert','gig','jazz','rock','pop','electronic','folk','metal','blues','indie','choir','orchestra','band','festival','live','techno','soul','classical','musiikki','keikka'];
-  const today  = new Date().toISOString().split('T')[0];
-  const future = new Date(Date.now()+180*864e5).toISOString().split('T')[0];
-  let url = `https://api.hel.fi/linkedevents/v1/event/?start=${today}&end=${future}&keyword=yso:p1808&page_size=100&sort=start_time&include=location,keywords,offers`;
-  allEvents = [];
+// ── fetch stats + sidebar counts ──────
+async function loadStats() {
   try {
-    while (url) {
-      const r = await fetch(url);
-      const d = await r.json();
-      (d.data||[]).forEach(raw=>{
-        const name = raw.name?.en||raw.name?.fi||'';
-        if (!name) return;
-        const t = (name+' '+(raw.keywords||[]).map(k=>k.name?.en||'').join(' ')).toLowerCase();
-        if (!KW.some(k=>t.includes(k))) return;
-        const offer  = (raw.offers||[])[0];
-        const isFree = offer?.is_free===true;
-        allEvents.push({
-          id:       raw.id,
-          name,
-          venue:    raw.location?.name?.en||raw.location?.name?.fi||'Helsinki',
-          date_iso: raw.start_time||null,
-          tags:     (raw.keywords||[]).map(k=>k.name?.en||k.name?.fi||'').filter(Boolean).slice(0,3),
-          isFree,
-          price:    isFree?'Free':(offer?.price?.en||offer?.price?.fi||null),
-          url:      raw.info_url?.en||raw.info_url?.fi||null,
-        });
-      });
-      url = d.next||null;
-      setText(`Fetching… ${allEvents.length}`);
-      if (url) await new Promise(r=>setTimeout(r,80));
+    const d = await fetch(API+'/api/stats').then(r=>r.json());
+    document.getElementById('s-total').textContent = d.total;
+    document.getElementById('s-week').textContent  = d.thisWeek;
+    document.getElementById('nav-total').textContent = d.total;
+    const src = Object.fromEntries((d.bySource||[]).map(s=>[s.source,s.n]));
+    document.getElementById('s-sources').textContent = Object.values(src).filter(v=>v>0).length;
+
+    // Sidebar
+    ['hel','tm','sk','tiketti'].forEach(s=>{
+      const el = document.getElementById('nav-'+s);
+      if(el) el.textContent = src[s]||0;
+      const cel = document.getElementById('c-'+s);
+      if(cel) cel.textContent = src[s]||0;
+    });
+
+    // Source bars
+    const total = Math.max(1, d.total);
+    ['hel','tm','sk','tiketti'].forEach(s=>{
+      const b = document.getElementById('b-'+s);
+      if(b) b.style.width = Math.round((src[s]||0)/total*100)+'%';
+    });
+
+    // Last crawl
+    const lastOk = (d.lastCrawlLogs||[]).find(l=>l.status==='ok');
+    if(lastOk) {
+      const t = new Date(lastOk.ended_at).toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('s-sync').textContent = t;
+      document.getElementById('sync-time').textContent = 'Last sync '+t;
     }
-  } catch(_) {}
-  build();
+  } catch(e) { console.error('Stats fetch failed', e); }
 }
 
-// ── build venue map + paginate ────────────────────────
-function build() {
-  venueMap = new Map();
-  const q = searchQuery.toLowerCase();
-  allEvents.forEach(e=>{
-    const v = e.venue||'Helsinki';
-    if (q && !e.name.toLowerCase().includes(q) && !v.toLowerCase().includes(q)) return;
-    if (!venueMap.has(v)) venueMap.set(v,[]);
-    venueMap.get(v).push(e);
-  });
-  venueMap.forEach((evs,v)=>venueMap.set(v,evs.sort((a,b)=>new Date(a.date_iso||0)-new Date(b.date_iso||0))));
-  const sorted = [...venueMap.entries()].sort((a,b)=>b[1].length-a[1].length);
-  pages = [];
-  for (let i=0;i<sorted.length;i+=PER_PAGE) pages.push(sorted.slice(i,i+PER_PAGE));
-  currentPage = 0;
-  renderStats();
-  renderPage();
-  setDot(false);
+// ── fetch and render events ───────────
+async function loadEvents(q='', filter='') {
+  const params = new URLSearchParams({ limit:200 });
+  if(q) params.set('q', q);
+  const r = await fetch(API+'/api/events?'+params).then(r=>r.json());
+  allEvents = r.events||[];
+  renderGrid(filter||currentFilter);
 }
 
-// ── stats strip ───────────────────────────────────────
-function renderStats() {
-  const now  = Date.now();
-  const week = now+7*864e5;
-  const free = allEvents.filter(e=>e.isFree).length;
-  const wk   = allEvents.filter(e=>{const d=new Date(e.date_iso||0).getTime();return d>=now&&d<=week;}).length;
-  setText(`${allEvents.length} events · ${venueMap.size} venues`);
-  document.getElementById('stats-strip').innerHTML=[
-    `<div class="stat-pill"><b>${allEvents.length}</b> total</div>`,
-    `<div class="stat-pill"><b>${venueMap.size}</b> venues</div>`,
-    `<div class="stat-pill"><b>${wk}</b> this week</div>`,
-    `<div class="stat-pill"><b>${free}</b> free</div>`,
-    `<div class="stat-pill"><b>${pages.length}</b> pages</div>`,
-  ].join('');
-}
-
-// ── render current page ───────────────────────────────
-function renderPage() {
+function renderGrid(filter) {
+  currentFilter = filter;
   const grid = document.getElementById('grid');
-  if (!pages.length) {
-    grid.innerHTML = '<div class="state-msg">No venues found</div>';
-    renderPagination(); return;
-  }
-  grid.innerHTML = pages[currentPage].map(([venue,events])=>{
-    const rows = events.slice(0,5).map(e=>{
-      const dt = e.date_iso?new Date(e.date_iso):null;
-      const ds = dt&&!isNaN(dt)
-        ? dt.toLocaleDateString('en-FI',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
-        : 'TBA';
-      const pt = e.isFree?`<span class="free-tag">Free</span>`:e.price?`<span class="price-tag">${e.price}</span>`:'';
-      const tg = (e.tags||[]).slice(0,2).map(t=>`<span class="etag">${t}</span>`).join('');
-      const lk = e.url?`href="${e.url}" target="_blank" rel="noopener"`:`href="javascript:void(0)" onclick="askAbout('${e.name.replace(/'/g,'&#39;').slice(0,50)}','${venue.replace(/'/g,'&#39;')}')"`;
-      return `<a class="event-row" ${lk}>
-        <div class="erow-top"><span class="etitle">${e.name}</span>${pt}</div>
-        <div class="edate">${ds}</div>
-        ${tg?`<div class="etags">${tg}</div>`:''}
-      </a>`;
-    }).join('');
-    const extra = events.length-5;
-    const more  = extra>0?`<div class="more-row" onclick="filterVenue('${venue.replace(/'/g,'&#39;')}')">+${extra} more events ›</div>`:'';
-    return `<div class="venue-card">
-      <div class="venue-header">
-        <span class="venue-name">${venue}</span>
-        <span class="venue-badge">${events.length}</span>
+  let list = filter
+    ? allEvents.filter(e=>{ const t=(e.name+' '+(e.tags||[]).join(' ')).toLowerCase(); return t.includes(filter); })
+    : allEvents;
+  if(!list.length){ grid.innerHTML='<div class="empty">No events found</div>'; return; }
+  const pill={hel:'s-hel',tm:'s-tm',sk:'s-sk',tiketti:'s-tiketti'};
+  const plbl={hel:'LinkedEvents',tm:'Ticketmaster',sk:'Songkick',tiketti:'Tiketti'};
+  grid.innerHTML = list.map(e=>{
+    const dt = e.date_iso ? new Date(e.date_iso) : null;
+    const ds = dt&&!isNaN(dt) ? dt.toLocaleDateString('en-FI',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    const tags = Array.isArray(e.tags) ? e.tags : JSON.parse(e.tags||'[]');
+    return `<div class="ecard" ${e.url?`onclick="window.open('${e.url}','_blank')"`:''}>
+      <div class="ecard-top">
+        <div class="ecard-date">${ds}</div>
+        <span class="spill ${pill[e.source]||''}">${plbl[e.source]||e.source}</span>
       </div>
-      <div class="event-list">${rows}${more}</div>
+      <div class="ecard-name">${e.name}</div>
+      <div class="ecard-venue">${e.venue||'Helsinki'}</div>
+      <div class="ecard-tags">
+        ${tags.slice(0,3).map(t=>`<span class="etag">${t}</span>`).join('')}
+        ${e.price?`<span class="ptag">${e.price}</span>`:''}
+      </div>
     </div>`;
   }).join('');
-  renderPagination();
 }
 
-function renderPagination() {
-  const total = pages.length;
-  document.getElementById('page-info').textContent  = `Page ${currentPage+1} of ${Math.max(1,total)}`;
-  document.getElementById('page-total').textContent = `${venueMap.size} venues`;
-  document.getElementById('btn-prev').disabled = currentPage===0;
-  document.getElementById('btn-next').disabled = currentPage>=total-1;
-  const show = Math.min(total,10);
-  document.getElementById('dots').innerHTML = Array.from({length:show},(_,i)=>
-    `<div class="dot${i===currentPage?' active':''}" onclick="goPage(${i})"></div>`
-  ).join('');
+function setFilter(f,el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid(f);
 }
 
-function changePage(dir){
-  currentPage=Math.max(0,Math.min(pages.length-1,currentPage+dir));
-  renderPage();
-  window.scrollTo({top:0,behavior:'smooth'});
+// ── AI search (calls Claude API via server proxy) ─
+async function doSearch(){
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  document.getElementById('ai-bar').style.display='block';
+  document.getElementById('ai-text').textContent='Searching…';
+  // Also do a FTS search on the DB
+  await loadEvents(q);
+  // AI explanation
+  const snap = allEvents.slice(0,30).map(e=>({name:e.name,venue:e.venue,date:e.date_iso,price:e.price,source:e.source}));
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:350,
+        system:'Helsinki music event assistant. Answer in 2-4 sentences, mention names/venues/dates.',
+        messages:[{role:'user',content:`Events: ${JSON.stringify(snap)}\n\nQuery: "${q}"`}]
+      })
+    });
+    const d = await r.json();
+    document.getElementById('ai-text').textContent = d.content?.[0]?.text||'No results.';
+  } catch(e){ document.getElementById('ai-text').textContent = 'AI unavailable. Results shown above.'; }
 }
-function goPage(n){currentPage=n;renderPage();window.scrollTo({top:0,behavior:'smooth'});}
+document.addEventListener('keydown', e=>{ if(e.key==='Enter'&&document.activeElement.id==='q') doSearch(); });
 
-function onSearch(){
-  searchQuery=document.getElementById('search').value.trim();
-  build();
-}
-function filterVenue(v){
-  document.getElementById('search').value=v;
-  searchQuery=v;build();
-}
-function askAbout(name,venue){
-  window.open(`/api/events?q=${encodeURIComponent(name)}`,'_blank');
-}
-
-function setText(t){document.getElementById('banner-sub').textContent=t;}
-function setDot(on){
-  const d=document.getElementById('logo-dot');
-  d.className='logo-dot'+(on?' pulse':'');
+// ── trigger crawl ──────────────────────
+async function triggerCrawl(){
+  document.getElementById('pulse').classList.add('syncing');
+  document.getElementById('sync-time').textContent = 'Crawling…';
+  try {
+    await fetch(API+'/api/crawl',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"sources":["hel","tm","sk","tiketti"]}'});
+    setTimeout(async ()=>{
+      await Promise.all([loadStats(), loadEvents()]);
+      await loadLogs();
+      document.getElementById('pulse').classList.remove('syncing');
+    }, 12000); // wait for crawl to finish
+  } catch(e){ document.getElementById('pulse').classList.remove('syncing'); }
 }
 
-// keyboard: "/" focuses search
-document.addEventListener('keydown',e=>{
-  if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){
-    e.preventDefault();document.getElementById('search').focus();
-  }
-  if(e.key==='ArrowRight') changePage(1);
-  if(e.key==='ArrowLeft')  changePage(-1);
-});
+// ── load crawl logs ────────────────────
+async function loadLogs(){
+  try {
+    const logs = await fetch(API+'/api/logs').then(r=>r.json());
+    const panel = document.getElementById('log-panel');
+    if(!logs.length){ return; }
+    panel.innerHTML = logs.map(l=>{
+      const t = new Date(l.started_at).toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      const cls = l.status==='ok'?'log-ok':l.status==='error'?'log-err':'log-warn';
+      const msg = l.status==='ok' ? `${l.events_raw} fetched · ${l.events_new} new · ${l.events_upd} updated`
+                : l.status==='running' ? 'running…'
+                : `ERROR: ${l.error_msg||'unknown'}`;
+      return `<div class="log-line"><span class="log-time log-warn">${t}</span><span class="log-src">${l.source}</span><span class="${cls}">${msg}</span></div>`;
+    }).join('');
+  } catch(e){}
+}
 
-// auto-refresh every 60s
-setInterval(async()=>{
-  try{
-    const r=await fetch('/api/stats');
-    const d=await r.json();
-    if(d.total>allEvents.length) loadEvents();
-  }catch(_){}
-},60000);
+// ── export ─────────────────────────────
+function exportData(){ window.open(API+'/api/export','_blank'); }
 
-loadEvents();
+// ── tab nav ────────────────────────────
+function showView(name, el){
+  ['events','sources','logs','config'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = v===name?'block':'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  if(name==='logs') loadLogs();
+}
+
+// ── init ────────────────────────────────
+(async ()=>{
+  await loadStats();
+  await loadEvents();
+})();
+
+// Auto-refresh stats every 60s
+setInterval(loadStats, 60000);
 </script>
 </body>
 </html>

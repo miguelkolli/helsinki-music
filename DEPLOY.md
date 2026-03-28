@@ -1,22 +1,26 @@
-# 🚀 Deploy to Railway — Step by Step
+# Deploy to Railway
 
-## What you need
-- A GitHub account (free)
-- A Railway account (free) → railway.app
-- Your Ticketmaster API key
+## Prerequisites
+- GitHub account (free)
+- Railway account (free) → railway.app
+- Optional: Ticketmaster API key for more events
 
 ---
 
 ## Step 1 — Push to GitHub
 
 ```bash
-# In your project folder:
+cd helsinki-music
 git init
 git add .
 git commit -m "Helsinki music events server"
+```
 
-# Create a new repo on github.com, then:
+Create a new **empty** repo on github.com, then:
+
+```bash
 git remote add origin https://github.com/YOUR_USERNAME/helsinki-music.git
+git branch -M main
 git push -u origin main
 ```
 
@@ -24,132 +28,90 @@ git push -u origin main
 
 ## Step 2 — Create Railway project
 
-1. Go to **railway.app** → click **"Start a New Project"**
-2. Choose **"Deploy from GitHub repo"**
-3. Connect your GitHub account if not already connected
-4. Select your **helsinki-music** repository
-5. Railway detects Node.js automatically → click **"Deploy Now"**
+1. Go to **railway.app** → **New Project**
+2. Choose **Deploy from GitHub repo**
+3. Connect your GitHub account → select **helsinki-music**
+4. Railway detects Node.js automatically → click **Deploy Now**
 
-Your first deploy starts immediately (takes ~2 minutes).
+First deploy takes ~2–3 minutes (compiles `better-sqlite3` native module).
 
 ---
 
-## Step 3 — Add a persistent volume (IMPORTANT for SQLite)
+## Step 3 — Add a persistent volume ⚠️ IMPORTANT
 
-Railway containers restart occasionally. Without a volume, the database resets on every restart.
+Without a volume the SQLite database resets on every restart.
 
-1. In your Railway project → click your service
-2. Go to **"Volumes"** tab → click **"Add Volume"**
-3. Set mount path to: `/app/data`
-4. Click **"Add"**
-
-This keeps your `events.db` file alive across restarts and redeploys.
+1. Railway project → click your service → **Volumes** tab
+2. Click **Add Volume**
+3. Set mount path: `/app/data`
+4. Click **Add** → Railway redeploys automatically
 
 ---
 
 ## Step 4 — Set environment variables
 
-In Railway → your service → **"Variables"** tab → add these:
+Railway project → your service → **Variables** tab → add:
 
-| Variable | Value |
-|---|---|
-| `NODE_ENV` | `production` |
-| `PORT` | `3000` |
-| `DB_PATH` | `/app/data/events.db` |
-| `CRAWL_ON_START` | `true` |
-| `CRAWL_DAYS` | `90` |
-| `TICKETMASTER_API_KEY` | `your_key_here` |
+| Variable               | Value                    | Required |
+|------------------------|--------------------------|----------|
+| `NODE_ENV`             | `production`             | ✓        |
+| `PORT`                 | `3000`                   | ✓        |
+| `DB_PATH`              | `/app/data/mgevents.db`    | ✓        |
+| `CRAWL_ON_START`       | `true`                   | ✓        |
+| `CRAWL_DAYS`           | `90`                     | ✓        |
+| `TICKETMASTER_API_KEY` | your key                 | optional |
+| `SONGKICK_API_KEY`     | your key                 | optional |
 
-Leave `SONGKICK_API_KEY` empty for now — add it when you have it.
-
-Click **"Deploy"** after adding variables to redeploy with the new config.
+Click **Deploy** after saving variables.
 
 ---
 
 ## Step 5 — Get your public URL
 
-Railway gives you a free URL automatically:
+Railway service → **Settings** → **Networking** → **Generate Domain**
 
-1. Go to your service → **"Settings"** tab
-2. Under **"Networking"** → click **"Generate Domain"**
-3. You get a URL like: `https://helsinki-music-production.up.railway.app`
-
-That's your live public API. Share it with anyone.
-
----
-
-## Step 6 — Add your own domain (later)
-
-When you buy a domain (e.g. `helsinkimusic.fi`):
-
-1. Railway → Settings → Networking → **"Add Custom Domain"**
-2. Type your domain → Railway shows you a CNAME record
-3. In your domain registrar's DNS settings → add that CNAME
-4. Wait 5–15 minutes for DNS to propagate
-5. Railway auto-provisions a free SSL certificate (HTTPS)
-
----
-
-## Step 7 — Verify it's working
-
-Once deployed, test these URLs (replace with your Railway URL):
-
+You'll get something like:
 ```
-GET  https://your-app.up.railway.app/health
-     → { "status": "ok", "db": { "total_events": 423 } }
-
-GET  https://your-app.up.railway.app/api/events?limit=5
-     → { "events": [...], "meta": { "total": 423 } }
-
-GET  https://your-app.up.railway.app/api/stats
-     → source counts, last crawl time
-
-GET  https://your-app.up.railway.app/
-     → the full web app UI
+https://helsinki-music-production.up.railway.app
 ```
 
 ---
 
-## Cron schedule (runs automatically)
+## Verify it's working
 
-Once live, the server crawls on its own schedule forever:
-
-| Source | Schedule | Notes |
-|---|---|---|
-| LinkedEvents | Every 6h | Free, no key |
-| Ticketmaster | Every 12h | Needs key |
-| Tiketti | Every 8h | Web crawler |
-| Songkick | Every 24h | Add key when ready |
-
----
-
-## Free tier limits on Railway
-
-Railway's free Hobby plan includes:
-- $5 free credit/month (enough for a small always-on server)
-- 512 MB RAM
-- Shared CPU
-- 1 GB volume storage
-
-This app uses ~80 MB RAM and ~50 MB disk. Well within limits.
+```
+/health          → { "status": "ok", "db": { "total_events": 400 } }
+/api/events      → paginated event list
+/api/stats       → counts by source
+/                → public events UI
+/admin           → admin panel (add sites, browse events, ask AI)
+```
 
 ---
 
-## Trigger a manual crawl via API
+## Crawl schedule (runs automatically)
+
+| Source       | Frequency | Key needed |
+|--------------|-----------|------------|
+| Helsinki API | every 6h  | no (free)  |
+| Ticketmaster | every 12h | yes        |
+| Songkick     | every 24h | yes        |
+| Tiketti      | every 8h  | no         |
+
+---
+
+## Free tier
+
+Railway Hobby plan: $5 credit/month. This app uses ~80 MB RAM — well within limits.
+
+---
+
+## Trigger a crawl via API
 
 ```bash
 curl -X POST https://your-app.up.railway.app/api/crawl \
   -H "Content-Type: application/json" \
-  -d '{"sources": ["hel", "tm", "tiketti"]}'
+  -d '{"sources": ["hel", "tiketti"]}'
 ```
 
----
-
-## Adding Songkick later
-
-When your Songkick key is approved:
-1. Railway → Variables → add `SONGKICK_API_KEY=your_key`
-2. Click Deploy
-3. The Songkick crawler activates automatically on next cron run
-
-No code changes needed.
+Or use the **Admin panel** at `/admin` → Sources → "Crawl Now".

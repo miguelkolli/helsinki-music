@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — Helsinki Music</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:     #0a0b0d;
+  --bg2:    #111316;
+  --bg3:    #191c21;
+  --bg4:    #20242b;
+  --border: rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --text:   #ecedf0;
+  --text2:  #7e8290;
+  --text3:  #454850;
+  --green:  #1fba8a;
+  --green2: rgba(31,186,138,0.12);
+  --blue:   #4d9de8;
+  --blue2:  rgba(77,157,232,0.12);
+  --amber:  #e0a040;
+  --amber2: rgba(224,160,64,0.12);
+  --red:    #e05555;
+  --red2:   rgba(224,85,85,0.12);
+  --purple: #9b8ef5;
+  --r:      8px;
+  --mono:   'Space Mono', monospace;
+  --sans:   'Syne', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;overflow:hidden}
+
+/* ── SHELL ─────────────────────────────────────── */
+.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr;height:100vh}
+
+/* ── TOPBAR ─────────────────────────────────────── */
+.topbar{
+  grid-column:1/-1;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;
+  position:relative;z-index:20;
+}
+.logo{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:10px}
+.logo-badge{
+  background:var(--green);color:#000;font-weight:700;font-size:10px;
+  padding:2px 7px;border-radius:4px;letter-spacing:0.06em;
+}
+.logo-title{color:var(--text2)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:20px;padding:4px 10px;
+}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.status-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+.btn{
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  padding:5px 14px;border-radius:6px;
+  border:1px solid var(--border2);
+  background:transparent;color:var(--text);cursor:pointer;
+  transition:all 0.15s;letter-spacing:0.02em;
+}
+.btn:hover{background:var(--bg3)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#000}
+.btn.primary:hover{opacity:0.88}
+.btn.danger{background:var(--red2);border-color:var(--red);color:var(--red)}
+.btn.sm{padding:3px 10px;font-size:11px}
+
+/* ── SIDEBAR ─────────────────────────────────────── */
+.sidebar{
+  background:var(--bg2);border-right:1px solid var(--border);
+  padding:1rem 0;overflow-y:auto;
+}
+.nav-label{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:0.1em;color:var(--text3);
+  padding:0 1rem;margin:1rem 0 0.4rem;text-transform:uppercase;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 1rem;cursor:pointer;
+  color:var(--text2);font-size:13px;font-weight:600;
+  transition:color 0.1s;border-left:2px solid transparent;
+}
+.nav-item:hover{color:var(--text)}
+.nav-item.active{color:var(--text);background:var(--bg3);border-left-color:var(--green)}
+.nav-icon{font-size:15px;min-width:18px;text-align:center}
+.nav-badge{
+  margin-left:auto;font-family:var(--mono);font-size:10px;
+  color:var(--text3);background:var(--bg4);
+  border-radius:4px;padding:1px 6px;
+}
+
+/* ── MAIN ─────────────────────────────────────── */
+.main{overflow-y:auto;padding:1.75rem}
+
+/* ── SECTIONS ─────────────────────────────────── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── PAGE HEADER ──────────────────────────────── */
+.page-header{margin-bottom:1.5rem}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-0.03em}
+.page-sub{font-size:13px;color:var(--text2);margin-top:4px;font-weight:400}
+
+/* ── STAT ROW ──────────────────────────────────── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0.875rem 1.1rem}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;letter-spacing:0.02em}
+.stat-val{font-family:var(--mono);font-size:24px;font-weight:700}
+.stat-val.green{color:var(--green)}
+.stat-val.blue{color:var(--blue)}
+.stat-val.amber{color:var(--amber)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* ── CARDS ─────────────────────────────────────── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem}
+.card-title{font-size:13px;font-weight:700;margin-bottom:1rem;color:var(--text2);letter-spacing:0.03em;text-transform:uppercase;font-family:var(--mono);font-size:11px}
+
+/* ── SOURCE MANAGEMENT ──────────────────────────── */
+.sources-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.source-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;
+  transition:border-color 0.15s;
+}
+.source-card.enabled{border-color:rgba(31,186,138,0.3)}
+.src-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.src-icon{font-size:18px}
+.src-name{font-size:14px;font-weight:700;flex:1}
+.src-toggle{
+  position:relative;width:36px;height:20px;cursor:pointer;
+}
+.src-toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;background:var(--bg4);border-radius:10px;
+  border:1px solid var(--border2);transition:background 0.2s;
+}
+.src-toggle input:checked + .toggle-track{background:var(--green)}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:12px;height:12px;
+  background:#fff;border-radius:50%;transition:transform 0.2s;
+}
+.src-toggle input:checked ~ .toggle-thumb{transform:translateX(16px)}
+.src-url{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  background:var(--bg3);border-radius:4px;padding:4px 8px;
+  margin-bottom:8px;word-break:break-all;line-height:1.5;
+}
+.src-meta{display:flex;gap:12px;font-size:11px;color:var(--text2)}
+.src-meta span{display:flex;align-items:center;gap:4px}
+.src-actions{display:flex;gap:6px;margin-top:10px}
+
+/* ── ADD SOURCE FORM ────────────────────────────── */
+.add-form{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);
+  padding:1.25rem;margin-bottom:1.25rem;
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.04em;text-transform:uppercase;font-family:var(--mono)}
+.form-input{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:6px;
+  padding:8px 12px;color:var(--text);font-family:var(--sans);font-size:13px;
+  transition:border-color 0.15s;
+}
+.form-input:focus{outline:none;border-color:var(--green)}
+.form-input::placeholder{color:var(--text3)}
+select.form-input{cursor:pointer}
+.form-actions{display:flex;gap:8px;align-items:center}
+.form-hint{font-size:11px;color:var(--text3);margin-left:auto}
+
+/* ── EVENTS TABLE ───────────────────────────────── */
+.search-bar{
+  display:flex;gap:8px;margin-bottom:1rem;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:8px 12px;align-items:center;
+}
+.search-bar input{
+  flex:1;background:transparent;border:none;color:var(--text);
+  font-family:var(--sans);font-size:13px;
+}
+.search-bar input:focus{outline:none}
+.search-bar input::placeholder{color:var(--text3)}
+.search-icon{color:var(--text3);font-size:14px}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.chip{
+  font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;
+  border:1px solid var(--border);color:var(--text2);
+  background:transparent;cursor:pointer;transition:all 0.12s;font-family:var(--sans);
+}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--green);border-color:var(--green);color:#000}
+
+.events-table{width:100%;border-collapse:collapse}
+.events-table th{
+  text-align:left;font-family:var(--mono);font-size:10px;font-weight:700;
+  letter-spacing:0.08em;color:var(--text3);text-transform:uppercase;
+  padding:6px 12px 10px;border-bottom:1px solid var(--border);
+}
+.events-table td{
+  padding:10px 12px;font-size:12px;border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+.events-table tr:hover td{background:var(--bg3)}
+.event-name{font-weight:600;color:var(--text);font-size:13px;margin-bottom:2px}
+.event-venue{color:var(--text2);font-size:11px}
+.source-pill{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:4px;letter-spacing:0.04em;white-space:nowrap;
+}
+.p-hel{background:rgba(31,186,138,0.15);color:#4fd4a8}
+.p-tm{background:rgba(77,157,232,0.15);color:#6db3f0}
+.p-sk{background:rgba(224,160,64,0.15);color:#e8aa50}
+.p-tiketti{background:rgba(155,142,245,0.15);color:#c4bef9}
+.p-custom{background:rgba(224,85,85,0.15);color:#f08080}
+.tag{
+  display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;
+  background:var(--bg4);color:var(--text2);margin:1px;
+}
+.event-price{font-family:var(--mono);font-size:11px;color:var(--green);white-space:nowrap}
+.event-link{color:var(--blue);text-decoration:none;font-size:11px}
+.event-link:hover{text-decoration:underline}
+.date-cell{font-family:var(--mono);font-size:11px;color:var(--text2);white-space:nowrap}
+
+/* ── PAGINATION ─────────────────────────────────── */
+.pagination{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+.page-info{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.page-btns{display:flex;gap:4px}
+.page-btn{
+  font-family:var(--mono);font-size:11px;
+  padding:4px 10px;border-radius:5px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--text2);cursor:pointer;transition:all 0.1s;
+}
+.page-btn:hover:not(:disabled){background:var(--bg3);color:var(--text)}
+.page-btn:disabled{opacity:0.3;cursor:default}
+.page-btn.curr{background:var(--green);border-color:var(--green);color:#000;font-weight:700}
+
+/* ── AI CHAT ─────────────────────────────────────── */
+.chat-layout{display:grid;grid-template-rows:1fr auto;gap:1rem;height:calc(100vh - 52px - 3.5rem - 60px)}
+.chat-messages{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;
+}
+.msg{display:flex;gap:12px;animation:fadeUp 0.2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg-avatar{
+  width:28px;height:28px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+}
+.msg-avatar.user{background:var(--bg4);color:var(--text2)}
+.msg-avatar.ai{background:var(--green2);color:var(--green);border:1px solid rgba(31,186,138,0.3)}
+.msg-body{flex:1;min-width:0}
+.msg-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:5px}
+.msg-text{font-size:13px;line-height:1.7;color:var(--text)}
+.msg-text p{margin-bottom:8px}
+.msg-text p:last-child{margin-bottom:0}
+.msg-text strong{color:var(--text);font-weight:700}
+.msg-text em{color:var(--text2)}
+.msg-text code{font-family:var(--mono);font-size:11px;background:var(--bg4);padding:1px 5px;border-radius:3px;color:var(--amber)}
+.msg.thinking .msg-text{color:var(--text3);font-style:italic;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+.chat-input-area{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  padding:0.875rem 1rem;
+}
+.chat-suggestions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.suggestion{
+  font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;
+  border:1px solid var(--border2);color:var(--text2);background:transparent;
+  cursor:pointer;transition:all 0.12s;font-family:var(--sans);
+}
+.suggestion:hover{background:var(--bg3);color:var(--text)}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end}
+.chat-textarea{
+  flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;
+  padding:8px 12px;color:var(--text);font-family:var(--sans);font-size:13px;
+  resize:none;min-height:38px;max-height:120px;line-height:1.5;
+  transition:border-color 0.15s;
+}
+.chat-textarea:focus{outline:none;border-color:var(--green)}
+.chat-textarea::placeholder{color:var(--text3)}
+
+/* ── CRAWL LOGS ─────────────────────────────────── */
+.log-table{width:100%;border-collapse:collapse}
+.log-table th{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.08em;
+  color:var(--text3);text-transform:uppercase;padding:6px 12px 10px;
+  border-bottom:1px solid var(--border);text-align:left;
+}
+.log-table td{
+  padding:9px 12px;font-size:12px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);
+}
+.log-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.04em}
+.ls-ok{background:var(--green2);color:var(--green)}
+.ls-error{background:var(--red2);color:var(--red)}
+.ls-running{background:var(--amber2);color:var(--amber)}
+.crawl-controls{
+  display:flex;gap:8px;align-items:center;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);
+  padding:1rem;margin-bottom:1.25rem;
+}
+.crawl-label{font-size:13px;font-weight:600;color:var(--text);margin-right:auto}
+.src-checks{display:flex;gap:12px;align-items:center}
+.src-check{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);cursor:pointer}
+.src-check input{accent-color:var(--green)}
+
+/* ── EMPTY STATE ─────────────────────────────────── */
+.empty{text-align:center;padding:3rem;color:var(--text3);font-size:13px}
+.empty-icon{font-size:2rem;margin-bottom:8px;opacity:0.4}
+
+/* ── LOADING ─────────────────────────────────────── */
+.spinner{
+  display:inline-block;width:14px;height:14px;border:2px solid var(--border2);
+  border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOAST ───────────────────────────────────────── */
+.toast-area{position:fixed;bottom:1.5rem;right:1.5rem;z-index:100;display:flex;flex-direction:column;gap:8px}
+.toast{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 16px;font-size:12px;font-weight:600;min-width:200px;
+  display:flex;align-items:center;gap:8px;
+  animation:slideIn 0.2s ease;box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+.toast.ok{border-left:3px solid var(--green)}
+.toast.err{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid var(--blue)}
+
+/* ── SCROLLBAR ───────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <span class="logo-badge">ADMIN</span>
+      <span class="logo-title">Helsinki Music Bot</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill">
+        <span class="status-dot" id="connDot"></span>
+        <span id="connLabel">connecting…</span>
+      </div>
+      <button class="btn primary" onclick="triggerCrawl(['hel','tm','sk','tiketti'])">▶ Run Crawl</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-label">Admin</div>
+    <div class="nav-item active" data-section="overview" onclick="nav(this)">
+      <span class="nav-icon">◈</span> Overview
+    </div>
+    <div class="nav-item" data-section="sources" onclick="nav(this)">
+      <span class="nav-icon">⊕</span> Sources
+      <span class="nav-badge" id="sourceBadge">—</span>
+    </div>
+    <div class="nav-item" data-section="events" onclick="nav(this)">
+      <span class="nav-icon">♪</span> Events
+      <span class="nav-badge" id="eventBadge">—</span>
+    </div>
+    <div class="nav-label">Tools</div>
+    <div class="nav-item" data-section="ask" onclick="nav(this)">
+      <span class="nav-icon">✦</span> Ask AI
+    </div>
+    <div class="nav-item" data-section="logs" onclick="nav(this)">
+      <span class="nav-icon">≡</span> Crawl Logs
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <section id="sec-overview" class="section active">
+      <div class="page-header">
+        <div class="page-title">Overview</div>
+        <div class="page-sub">Bot status and event summary</div>
+      </div>
+      <div class="stat-row" id="statRow">
+        <div class="stat"><div class="stat-label">Total Events</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">upcoming</div></div>
+        <div class="stat"><div class="stat-label">This Week</div><div class="stat-val green" id="s-week">—</div><div class="stat-sub">next 7 days</div></div>
+        <div class="stat"><div class="stat-label">Sources Active</div><div class="stat-val blue" id="s-sources">—</div><div class="stat-sub">crawlers enabled</div></div>
+        <div class="stat"><div class="stat-label">Custom Sites</div><div class="stat-val amber" id="s-custom">—</div><div class="stat-sub">added by you</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="card">
+          <div class="card-title">Events by Source</div>
+          <div id="srcBreakdown" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Recent Crawl Activity</div>
+          <div id="recentLogs" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOURCES -->
+    <section id="sec-sources" class="section">
+      <div class="page-header">
+        <div class="page-title">Sources</div>
+        <div class="page-sub">Manage which sites the bot crawls for events</div>
+      </div>
+
+      <!-- Add new source -->
+      <div class="add-form">
+        <div class="card-title" style="margin-bottom:14px">+ Add Custom Site</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Site Name</label>
+            <input class="form-input" id="f-name" placeholder="e.g. Tavastia Club" type="text"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-input" id="f-type">
+              <option value="venue">Music Venue</option>
+              <option value="festival">Festival</option>
+              <option value="ticketing">Ticketing Site</option>
+              <option value="blog">Events Blog</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">URL</label>
+            <input class="form-input" id="f-url" placeholder="https://www.tavastia.fi/events" type="url"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Crawl Frequency</label>
+            <select class="form-input" id="f-freq">
+              <option value="6">Every 6 hours</option>
+              <option value="12">Every 12 hours</option>
+              <option value="24">Daily</option>
+              <option value="48">Every 2 days</option>
+              <option value="168">Weekly</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes (optional)</label>
+            <input class="form-input" id="f-notes" placeholder="e.g. requires JS rendering" type="text"/>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" onclick="addSource()">Add Source</button>
+          <button class="btn" onclick="clearForm()">Clear</button>
+          <span class="form-hint">Sources are saved locally and used in future crawls</span>
+        </div>
+      </div>
+
+      <!-- Built-in sources -->
+      <div class="card-title" style="margin:0 0 10px">Built-in Crawlers</div>
+      <div class="sources-grid" id="builtinSources"></div>
+
+      <!-- Custom sources -->
+      <div id="customSourcesWrap" style="display:none">
+        <div class="card-title" style="margin:1.25rem 0 10px">Custom Sites</div>
+        <div class="sources-grid" id="customSources"></div>
+      </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="sec-events" class="section">
+      <div class="page-header">
+        <div class="page-title">Events</div>
+        <div class="page-sub">All events found by the bot</div>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon">⌕</span>
+        <input id="evSearch" placeholder="Search events, venues, tags…" oninput="debSearch(this.value)"/>
+        <span id="searchSpinner" style="display:none"><span class="spinner"></span></span>
+      </div>
+      <div class="filter-row" id="filterChips"></div>
+      <div style="overflow-x:auto">
+        <table class="events-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Source</th>
+              <th>Tags</th>
+              <th>Price</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span class="page-info" id="pageInfo"></span>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+    </section>
+
+    <!-- ASK AI -->
+    <section id="sec-ask" class="section">
+      <div class="page-header">
+        <div class="page-title">Ask AI</div>
+        <div class="page-sub">Ask questions about the events found by the bot</div>
+      </div>
+      <div class="chat-layout">
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg">
+            <div class="msg-avatar ai">✦</div>
+            <div class="msg-body">
+              <div class="msg-meta">AI Assistant · now</div>
+              <div class="msg-text">Hi! I can answer questions about the Helsinki music events the bot has collected. Ask me anything — upcoming gigs this week, specific genres, venues, ticket prices, or recommendations.</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-suggestions">
+            <button class="suggestion" onclick="sendSuggestion(this)">What's on this weekend?</button>
+            <button class="suggestion" onclick="sendSuggestion(this)">Any free events?</button>
+            <button class="suggestion" onclick="sendSuggestion(this)">Best jazz gigs coming up?</button>
+            <button class="suggestion" onclick="sendSuggestion(this)">Events at Tavastia?</button>
+            <button class="suggestion" onclick="sendSuggestion(this)">Electronic music this month?</button>
+          </div>
+          <div class="chat-input-row">
+            <textarea class="chat-textarea" id="chatInput" placeholder="Ask about events…" rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+              oninput="autoResize(this)"></textarea>
+            <button class="btn primary" onclick="sendChat()">Send ↵</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGS -->
+    <section id="sec-logs" class="section">
+      <div class="page-header">
+        <div class="page-title">Crawl Logs</div>
+        <div class="page-sub">History of bot crawl runs</div>
+      </div>
+      <div class="crawl-controls">
+        <span class="crawl-label">Manual crawl trigger</span>
+        <div class="src-checks">
+          <label class="src-check"><input type="checkbox" id="ck-hel" checked/> Helsinki API</label>
+          <label class="src-check"><input type="checkbox" id="ck-tm" checked/> Ticketmaster</label>
+          <label class="src-check"><input type="checkbox" id="ck-sk" checked/> Songkick</label>
+          <label class="src-check"><input type="checkbox" id="ck-tiketti" checked/> Tiketti</label>
+        </div>
+        <button class="btn primary" onclick="manualCrawl()">▶ Run Now</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Started</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Fetched</th>
+              <th>New</th>
+              <th>Updated</th>
+              <th>Duration</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- TOAST AREA -->
+<div class="toast-area" id="toastArea"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+const state = {
+  stats: null,
+  events: [],
+  page: 1,
+  limit: 25,
+  total: 0,
+  source: null,
+  query: '',
+  customSources: JSON.parse(localStorage.getItem('hm_custom_sources') || '[]'),
+  builtins: [
+    { id:'hel', name:'Helsinki LinkedEvents', icon:'🏛️', url:'api.hel.fi/linkedevents', enabled:true, desc:'City of Helsinki official events API' },
+    { id:'tm',  name:'Ticketmaster',          icon:'🎟️', url:'app.ticketmaster.com',      enabled:true, desc:'Ticketmaster Discovery API — requires API key' },
+    { id:'sk',  name:'Songkick',              icon:'🎸', url:'api.songkick.com',           enabled:true, desc:'Songkick metro area calendar — requires API key' },
+    { id:'tiketti', name:'Tiketti',           icon:'🇫🇮', url:'www.tiketti.fi',             enabled:true, desc:'Finnish ticketing site (web scraper)' },
+  ],
+  chatHistory: [],
+  searchTimer: null,
+};
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function nav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const sec = el.dataset.section;
+  document.getElementById('sec-' + sec).classList.add('active');
+  if (sec === 'events')  loadEvents();
+  if (sec === 'logs')    loadLogs();
+  if (sec === 'sources') renderSources();
+  if (sec === 'overview') loadStats();
+}
+
+// ═══════════════════════════════════════════════════════
+//  API HELPERS
+// ═══════════════════════════════════════════════════════
+async function api(path, opts) {
+  try {
+    const r = await fetch(path, opts);
+    return await r.json();
+  } catch(e) {
+    toast('API error: ' + e.message, 'err');
+    return null;
+  }
+}
+
+function setConn(ok) {
+  document.getElementById('connDot').className = 'status-dot' + (ok ? ' ok' : '');
+  document.getElementById('connLabel').textContent = ok ? 'Connected' : 'Offline';
+}
+
+// ═══════════════════════════════════════════════════════
+//  STATS / OVERVIEW
+// ═══════════════════════════════════════════════════════
+async function loadStats() {
+  const d = await api('/api/stats');
+  if (!d) { setConn(false); return; }
+  setConn(true);
+  state.stats = d;
+
+  document.getElementById('s-total').textContent = d.total ?? 0;
+  document.getElementById('s-week').textContent = d.thisWeek ?? 0;
+  document.getElementById('s-sources').textContent = (d.bySource||[]).length;
+  document.getElementById('s-custom').textContent = state.customSources.length;
+  document.getElementById('eventBadge').textContent = d.total ?? 0;
+
+  // Source breakdown bars
+  const bySource = d.bySource || [];
+  const maxN = Math.max(...bySource.map(x=>x.n), 1);
+  document.getElementById('srcBreakdown').innerHTML = bySource.map(s => `
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;font-weight:600">${srcLabel(s.source)}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${s.n}</span>
+      </div>
+      <div style="background:var(--bg4);border-radius:4px;height:4px">
+        <div style="background:${srcColor(s.source)};height:4px;border-radius:4px;width:${Math.round(s.n/maxN*100)}%;transition:width 0.6s ease"></div>
+      </div>
+    </div>
+  `).join('') || '<div style="color:var(--text3);font-size:12px">No data yet</div>';
+
+  // Recent logs
+  document.getElementById('recentLogs').innerHTML = (d.lastCrawlLogs||[]).slice(0,6).map(l => `
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+      <span class="log-status ${l.status==='ok'?'ls-ok':l.status==='error'?'ls-err':'ls-running'}">${l.status}</span>
+      <span style="color:var(--text2);flex:1">${srcLabel(l.source)}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">${l.events_new ?? 0} new</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">${timeAgo(l.started_at)}</span>
+    </div>
+  `).join('') || '<div style="color:var(--text3);font-size:12px">No crawl runs yet</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════════════
+async function loadEvents() {
+  const params = new URLSearchParams({
+    page: state.page,
+    limit: state.limit,
+    ...(state.source ? {source: state.source} : {}),
+    ...(state.query ? {q: state.query} : {}),
+  });
+  document.getElementById('searchSpinner').style.display = '';
+  const d = await api('/api/events?' + params);
+  document.getElementById('searchSpinner').style.display = 'none';
+  if (!d) return;
+  state.events = d.events;
+  state.total = d.meta.total;
+  document.getElementById('eventBadge').textContent = d.meta.total;
+  renderEvents();
+  renderFilters(d.meta.bySource || []);
+  renderPagination(d.meta);
+}
+
+function renderEvents() {
+  const tbody = document.getElementById('eventsBody');
+  if (!state.events.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">♪</div>No events found</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.events.map(e => {
+    const tags = (Array.isArray(e.tags) ? e.tags : JSON.parse(e.tags||'[]')).slice(0,3);
+    const date = e.date_iso ? new Date(e.date_iso) : null;
+    const ds = date ? date.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' ' + date.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<tr>
+      <td><div class="event-name">${esc(e.name)}</div><div class="event-venue">📍 ${esc(e.venue||'Helsinki')}</div></td>
+      <td><div class="date-cell">${ds}</div></td>
+      <td><span class="source-pill p-${e.source}">${srcLabel(e.source)}</span></td>
+      <td>${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</td>
+      <td><span class="event-price">${e.price ? esc(e.price) : '—'}</span></td>
+      <td>${e.url ? `<a class="event-link" href="${esc(e.url)}" target="_blank" rel="noopener">↗ Link</a>` : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFilters(bySource) {
+  const chips = document.getElementById('filterChips');
+  const sources = ['hel','tm','sk','tiketti'];
+  chips.innerHTML = [
+    `<button class="chip ${!state.source?'active':''}" onclick="filterSrc(null)">All</button>`,
+    ...sources.map(s => `<button class="chip ${state.source===s?'active':''}" onclick="filterSrc('${s}')">${srcLabel(s)}</button>`)
+  ].join('');
+}
+
+function filterSrc(src) {
+  state.source = src;
+  state.page = 1;
+  loadEvents();
+}
+
+function debSearch(q) {
+  clearTimeout(state.searchTimer);
+  state.searchTimer = setTimeout(() => {
+    state.query = q;
+    state.page = 1;
+    loadEvents();
+  }, 350);
+}
+
+function renderPagination(meta) {
+  const totalPages = Math.ceil(meta.total / meta.limit);
+  document.getElementById('pageInfo').textContent = `${meta.total} events · page ${meta.page} of ${Math.max(totalPages,1)}`;
+  const btns = document.getElementById('pageBtns');
+  const pages = [];
+  if (meta.page > 1) pages.push(`<button class="page-btn" onclick="goPage(${meta.page-1})">‹</button>`);
+  for (let p = Math.max(1, meta.page-2); p <= Math.min(totalPages, meta.page+2); p++) {
+    pages.push(`<button class="page-btn ${p===meta.page?'curr':''}" onclick="goPage(${p})">${p}</button>`);
+  }
+  if (meta.page < totalPages) pages.push(`<button class="page-btn" onclick="goPage(${meta.page+1})">›</button>`);
+  btns.innerHTML = pages.join('');
+}
+
+function goPage(p) { state.page = p; loadEvents(); }
+
+// ═══════════════════════════════════════════════════════
+//  SOURCES
+// ═══════════════════════════════════════════════════════
+function renderSources() {
+  document.getElementById('sourceBadge').textContent = state.builtins.length + state.customSources.length;
+
+  document.getElementById('builtinSources').innerHTML = state.builtins.map(s => `
+    <div class="source-card ${s.enabled?'enabled':''}">
+      <div class="src-header">
+        <span class="src-icon">${s.icon}</span>
+        <span class="src-name">${s.name}</span>
+        <label class="src-toggle">
+          <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleBuiltin('${s.id}',this.checked)"/>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+      <div class="src-url">${s.url}</div>
+      <div class="src-meta">
+        <span>🔄 auto schedule</span>
+        <span style="color:var(--text3)">${s.desc}</span>
+      </div>
+      <div class="src-actions">
+        <button class="btn sm primary" onclick="triggerCrawl(['${s.id}'])">▶ Crawl Now</button>
+      </div>
+    </div>
+  `).join('');
+
+  if (state.customSources.length) {
+    document.getElementById('customSourcesWrap').style.display = '';
+    document.getElementById('customSources').innerHTML = state.customSources.map((s,i) => `
+      <div class="source-card enabled">
+        <div class="src-header">
+          <span class="src-icon">🌐</span>
+          <span class="src-name">${esc(s.name)}</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:var(--amber2);color:var(--amber);font-weight:700;font-family:var(--mono)">${s.type}</span>
+        </div>
+        <div class="src-url">${esc(s.url)}</div>
+        <div class="src-meta">
+          <span>🔄 every ${s.freq}h</span>
+          ${s.notes ? `<span>${esc(s.notes)}</span>` : ''}
+        </div>
+        <div class="src-actions">
+          <button class="btn sm danger" onclick="removeSource(${i})">Remove</button>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('customSourcesWrap').style.display = 'none';
+  }
+}
+
+function addSource() {
+  const name = document.getElementById('f-name').value.trim();
+  const url  = document.getElementById('f-url').value.trim();
+  const type = document.getElementById('f-type').value;
+  const freq = document.getElementById('f-freq').value;
+  const notes= document.getElementById('f-notes').value.trim();
+  if (!name || !url) { toast('Name and URL required', 'err'); return; }
+  try { new URL(url); } catch { toast('Invalid URL', 'err'); return; }
+  state.customSources.push({ name, url, type, freq, notes });
+  localStorage.setItem('hm_custom_sources', JSON.stringify(state.customSources));
+  clearForm();
+  renderSources();
+  toast(`Added: ${name}`, 'ok');
+
+  // Also POST to server so it knows about the new source
+  fetch('/api/sources', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ name, url, type, freq, notes })
+  }).catch(()=>{}); // best-effort
+}
+
+function removeSource(i) {
+  const s = state.customSources[i];
+  state.customSources.splice(i, 1);
+  localStorage.setItem('hm_custom_sources', JSON.stringify(state.customSources));
+  renderSources();
+  toast(`Removed: ${s.name}`, 'info');
+}
+
+function clearForm() {
+  ['f-name','f-url','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-type').selectedIndex = 0;
+  document.getElementById('f-freq').selectedIndex = 0;
+}
+
+function toggleBuiltin(id, val) {
+  const s = state.builtins.find(x=>x.id===id);
+  if (s) s.enabled = val;
+  renderSources();
+}
+
+// ═══════════════════════════════════════════════════════
+//  CRAWL
+// ═══════════════════════════════════════════════════════
+async function triggerCrawl(sources) {
+  toast('Starting crawl: ' + sources.join(', '), 'info');
+  const d = await api('/api/crawl', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ sources })
+  });
+  if (d?.ok) toast('Crawl started ✓', 'ok');
+}
+
+function manualCrawl() {
+  const srcs = ['hel','tm','sk','tiketti'].filter(s => document.getElementById('ck-'+s)?.checked);
+  if (!srcs.length) { toast('Select at least one source', 'err'); return; }
+  triggerCrawl(srcs);
+  setTimeout(loadLogs, 1500);
+}
+
+// ═══════════════════════════════════════════════════════
+//  LOGS
+// ═══════════════════════════════════════════════════════
+async function loadLogs() {
+  const logs = await api('/api/logs');
+  if (!logs) return;
+  const tbody = document.getElementById('logsBody');
+  if (!logs.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty"><div class="empty-icon">≡</div>No crawl runs yet</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = logs.map(l => {
+    const dur = l.ended_at && l.started_at ? Math.round((l.ended_at - l.started_at)/1000) + 's' : '—';
+    return `<tr>
+      <td style="color:var(--text2)">${new Date(l.started_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      <td><span class="source-pill p-${l.source}">${srcLabel(l.source)}</span></td>
+      <td><span class="log-status ${l.status==='ok'?'ls-ok':l.status==='error'?'ls-err':'ls-running'}">${l.status}</span></td>
+      <td style="color:var(--text)">${l.events_raw ?? 0}</td>
+      <td style="color:var(--green)">${l.events_new ?? 0}</td>
+      <td style="color:var(--blue)">${l.events_upd ?? 0}</td>
+      <td style="color:var(--text3)">${dur}</td>
+      <td style="color:var(--red);font-size:11px">${l.error_msg ? esc(l.error_msg.slice(0,60)) : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  AI CHAT
+// ═══════════════════════════════════════════════════════
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function sendSuggestion(btn) {
+  document.getElementById('chatInput').value = btn.textContent;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = ''; autoResize(input);
+
+  appendMsg('user', q);
+  state.chatHistory.push({ role:'user', content: q });
+
+  const thinkId = appendMsg('ai', '…', true);
+
+  // Grab recent events for context
+  let context = '';
+  try {
+    const d = await fetch('/api/events?limit=80').then(r=>r.json());
+    const evs = (d.events || []).slice(0, 60).map(e => {
+      const date = e.date_iso ? new Date(e.date_iso).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) : 'TBA';
+      const tags = (Array.isArray(e.tags)?e.tags:JSON.parse(e.tags||'[]')).join(', ');
+      return `• ${e.name} | ${e.venue} | ${date} | ${tags} | ${e.price||'free/?'} | ${e.source}`;
+    }).join('\n');
+    context = `Here are the upcoming Helsinki music events in the database:\n\n${evs}\n\nAnswer the user's question based on this data. Be helpful and specific. Format nicely using line breaks.`;
+  } catch(_) {
+    context = 'Unable to fetch event data. Answer based on general knowledge about Helsinki music.';
+  }
+
+  const systemPrompt = `You are the admin AI assistant for the Helsinki Music Bot. You have access to the events database and help the admin understand what events the bot has found.\n\n${context}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: state.chatHistory,
+      })
+    });
+    const data = await resp.json();
+    const text = (data.content||[]).map(b => b.type==='text'?b.text:'').join('');
+    updateMsg(thinkId, text || 'No response.');
+    state.chatHistory.push({ role:'assistant', content: text });
+    if (state.chatHistory.length > 20) state.chatHistory = state.chatHistory.slice(-20);
+  } catch(e) {
+    updateMsg(thinkId, 'Error: ' + e.message);
+  }
+}
+
+let msgId = 0;
+function appendMsg(role, text, thinking=false) {
+  const id = 'msg-' + (++msgId);
+  const isUser = role === 'user';
+  const avatar = isUser ? '👤' : '✦';
+  const box = document.createElement('div');
+  box.className = 'msg' + (thinking?' thinking':'');
+  box.id = id;
+  box.innerHTML = `
+    <div class="msg-avatar ${role}">${avatar}</div>
+    <div class="msg-body">
+      <div class="msg-meta">${isUser ? 'You' : 'AI Assistant'} · just now</div>
+      <div class="msg-text">${mdToHtml(text)}</div>
+    </div>`;
+  document.getElementById('chatMessages').appendChild(box);
+  box.scrollIntoView({ behavior:'smooth' });
+  return id;
+}
+
+function updateMsg(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('thinking');
+  el.querySelector('.msg-text').innerHTML = mdToHtml(text);
+}
+
+function mdToHtml(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\n/g,'<br/>');
+}
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+function srcLabel(src) {
+  return { hel:'Helsinki API', tm:'Ticketmaster', sk:'Songkick', tiketti:'Tiketti' }[src] || src || '?';
+}
+function srcColor(src) {
+  return { hel:'#1fba8a', tm:'#4d9de8', sk:'#e0a040', tiketti:'#9b8ef5' }[src] || '#888';
+}
+function timeAgo(ts) {
+  if (!ts) return '—';
+  const s = Math.round((Date.now() - ts) / 1000);
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.round(s/60) + 'm ago';
+  if (s < 86400) return Math.round(s/3600) + 'h ago';
+  return Math.round(s/86400) + 'd ago';
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════
+function toast(msg, type='info') {
+  const area = document.getElementById('toastArea');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${type==='ok'?'✓':type==='err'?'✕':'ℹ'}</span><span>${esc(msg)}</span>`;
+  area.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+async function init() {
+  await loadStats();
+  loadEvents(); // preload for badge
+}
+init();
+// Auto-refresh stats every 30s
+setInterval(loadStats, 30000);
+</script>
+</body>
+</html>
